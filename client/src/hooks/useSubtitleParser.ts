@@ -276,7 +276,9 @@ export function mergeSubtitles(
 export function convertToSRT(
   entries: SubtitleEntry[], 
   primarySize: number = 24, 
-  secondarySize: number = 18
+  secondarySize: number = 18,
+  primaryColor: string = '#ffffff',
+  secondaryColor: string = '#d4d4d4'
 ): string {
   // Gộp các entry có cùng timing để xuất ra 1 block SRT duy nhất
   // Điều này đảm bảo video player hiển thị text đúng thứ tự (primary dòng trên, secondary dòng dưới)
@@ -304,8 +306,8 @@ export function convertToSRT(
       const combinedText = sorted.map(entry => {
         const style = entry.customStyle;
         const size = style?.fontSize || (entry.language === 'primary' ? primarySize : secondarySize);
-        // Màu mặc định: secondary dùng màu xám nhạt/vàng nhạt để dễ phân biệt, primary màu trắng
-        const color = style?.textColor || (entry.language === 'secondary' ? '#d4d4d4' : '#ffffff');
+        // Màu mặc định: sử dụng màu truyền vào nếu không có style riêng
+        const color = style?.textColor || (entry.language === 'secondary' ? secondaryColor : primaryColor);
         return `<font size="${size}" color="${color}">${entry.text}</font>`;
       }).join('\n');
       
@@ -320,7 +322,9 @@ export function convertToSRT(
 export function convertToVTT(
   entries: SubtitleEntry[],
   primarySize: number = 24,
-  secondarySize: number = 18
+  secondarySize: number = 18,
+  primaryColor: string = '#ffffff',
+  secondaryColor: string = '#d4d4d4'
 ): string {
   const blocks: { timing: string; group: SubtitleEntry[] }[] = [];
   entries.forEach(entry => {
@@ -346,7 +350,7 @@ export function convertToVTT(
       const combinedText = sorted.map(entry => {
         const style = entry.customStyle;
         const size = style?.fontSize || (entry.language === 'primary' ? primarySize : secondarySize);
-        const color = style?.textColor || (entry.language === 'secondary' ? '#d4d4d4' : '#ffffff');
+        const color = style?.textColor || (entry.language === 'secondary' ? secondaryColor : primaryColor);
         return `<font size="${size}" color="${color}">${entry.text}</font>`;
       }).join('\n');
 

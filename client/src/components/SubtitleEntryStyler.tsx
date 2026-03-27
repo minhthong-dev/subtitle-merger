@@ -164,20 +164,39 @@ export default function SubtitleEntryStyler({
                 </div>
 
                 {/* Text Color */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <label className="text-sm font-medium">Text Color</label>
+                  
+                  {/* Color Presets */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {['#ffffff', '#ffff00', '#00ffff', '#00ff00', '#ff00ff', '#ff8800', '#ff0000', '#d4d4d4'].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => onEntryStyleChange(selectedEntryIndex, { ...customStyle, textColor: color })}
+                        className={`w-6 h-6 rounded-full border border-border shadow-sm transition-transform hover:scale-110 ${
+                          customStyle.textColor === color ? 'ring-2 ring-accent ring-offset-1 ring-offset-background' : ''
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+
                   <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={customStyle.textColor || '#ffffff'}
-                      onChange={handleTextColorChange}
-                      className="h-10 w-16 cursor-pointer rounded-md border border-border"
-                    />
+                    <div className="relative h-10 w-12 overflow-hidden rounded-md border border-border">
+                      <input
+                        type="color"
+                        value={customStyle.textColor || (selectedEntry.language === 'primary' ? '#ffffff' : '#d4d4d4')}
+                        onChange={handleTextColorChange}
+                        className="absolute -inset-2 h-14 w-16 cursor-pointer"
+                      />
+                    </div>
                     <input
                       type="text"
-                      value={customStyle.textColor || '#ffffff'}
+                      value={customStyle.textColor || (selectedEntry.language === 'primary' ? '#ffffff' : '#d4d4d4')}
                       onChange={handleTextColorChange}
-                      className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                      placeholder="#FFFFFF"
+                      className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
                 </div>

@@ -22,6 +22,8 @@ interface SubtitlePreviewProps {
   onEditEntryStyle?: () => void;
   primaryFontSize?: number;
   secondaryFontSize?: number;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 // Helper time formatter
@@ -40,10 +42,12 @@ export default function SubtitlePreview({
   onEditEntryStyle,
   primaryFontSize = 16,
   secondaryFontSize = 12,
+  primaryColor = '#ffffff',
+  secondaryColor = '#e0c97f',
 }: SubtitlePreviewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
 
   // Maximum time is the end time of the very last subtitle + a 1s buffer
@@ -208,7 +212,7 @@ export default function SubtitlePreview({
                       else fontSize = entry.customStyle?.fontSize || fontSize;
 
                       const textColor = entry.customStyle?.textColor ||
-                        (entry.language === 'secondary' ? '#e0c97f' : '#ffffff');
+                        (entry.language === 'secondary' ? secondaryColor : primaryColor);
 
                       return (
                         <p
@@ -265,6 +269,7 @@ export default function SubtitlePreview({
               <button
                 onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
                 className="text-white hover:text-[#d4a574] transition-colors focus:outline-none"
+                aria-label={isPlaying ? "Pause preview" : "Play preview"}
               >
                 {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
               </button>
@@ -337,8 +342,8 @@ export default function SubtitlePreview({
                       fontFamily: entry.customStyle?.fontFamily || 'inherit',
                       fontSize: `${listFontSize}px`,
                       fontWeight: isPrimary ? '600' : '400',
-                      color: isActive ? 'var(--foreground)' : (entry.customStyle?.textColor || 'var(--foreground)'),
-                      opacity: isActive ? 1 : 0.85
+                      color: entry.customStyle?.textColor || (isPrimary ? primaryColor : secondaryColor), 
+                      opacity: isActive ? 1 : 0.65
                     }}
                   >
                     {entry.text}

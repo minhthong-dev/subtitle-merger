@@ -9,11 +9,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  FileStack, 
-  Settings2, 
-  Download, 
-  RefreshCw, 
+import {
+  FileStack,
+  Settings2,
+  Download,
+  RefreshCw,
   Timer,
   Info
 } from 'lucide-react';
@@ -21,31 +21,33 @@ import { toast } from 'sonner';
 
 export default function Home() {
   const { mergeSubtitles, parseSubtitle, convertToSRT, convertToVTT } = useSubtitleParser();
-  
+
   // File states
   const [file1, setFile1] = useState<{ content: string; name: string } | null>(null);
   const [file2, setFile2] = useState<{ content: string; name: string } | null>(null);
   const [file1Name, setFile1Name] = useState<string>('Language 1');
   const [file2Name, setFile2Name] = useState<string>('Language 2');
-  
+
   // App states
   const [entries, setEntries] = useState<SubtitleEntry[]>([]);
   const [outputContent, setOutputContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showStyler, setShowStyler] = useState(false);
-  
+
   // Customization states
-  const [primaryFontSize, setPrimaryFontSize] = useState(24);
+  const [primaryFontSize, setPrimaryFontSize] = useState(35);
   const [secondaryFontSize, setSecondaryFontSize] = useState(18);
+  const [primaryColor, setPrimaryColor] = useState('#ffffff');
+  const [secondaryColor, setSecondaryColor] = useState('#ffff00');
   const [lineHeight, setLineHeight] = useState(1.5);
   const [marginBottom, setMarginBottom] = useState(10);
   const [offsetMs, setOffsetMs] = useState(0);
   const [globalOffsetMs, setGlobalOffsetMs] = useState(0);
-  
+
   // Merge logic
   const handleMerge = useCallback(() => {
     if (!file1 || !file2) return;
-    
+
     setIsLoading(true);
     try {
       // Capture current styles to persist them
@@ -58,9 +60,9 @@ export default function Home() {
 
       const sub1 = parseSubtitle(file1.content, file1Name);
       const sub2 = parseSubtitle(file2.content, file2Name);
-      
+
       const result = mergeSubtitles(sub1, sub2, 'srt', offsetMs, globalOffsetMs);
-      
+
       // Re-apply sustained styles
       const entriesWithStyles = result.entries.map((e: SubtitleEntry) => {
         const key = `${e.language}-${e.text}`;
@@ -71,11 +73,11 @@ export default function Home() {
       });
 
       setEntries(entriesWithStyles);
-      
+
       // RE-GENERATE CONTENT WITH STYLES to ensure manual edits are in the download
-      const finalContent = convertToSRT(entriesWithStyles, primaryFontSize, secondaryFontSize);
+      const finalContent = convertToSRT(entriesWithStyles, primaryFontSize, secondaryFontSize, primaryColor, secondaryColor);
       setOutputContent(finalContent);
-      
+
       toast.success('Subtitles merged and styles preserved!');
     } catch (error) {
       console.error('Merge error:', error);
@@ -95,10 +97,10 @@ export default function Home() {
   // Regenerate outputContent khi font size thay đổi (không cần merge lại)
   useEffect(() => {
     if (entries.length > 0) {
-      const newContent = convertToSRT(entries, primaryFontSize, secondaryFontSize);
+      const newContent = convertToSRT(entries, primaryFontSize, secondaryFontSize, primaryColor, secondaryColor);
       setOutputContent(newContent);
     }
-  }, [primaryFontSize, secondaryFontSize]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [primaryFontSize, secondaryFontSize, primaryColor, secondaryColor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFileSelect = async (file: File | null, index: number) => {
     if (!file) {
@@ -107,7 +109,7 @@ export default function Home() {
       setEntries([]);
       return;
     }
-    
+
     const content = await file.text();
     if (index === 1) {
       setFile1({ content, name: file.name });
@@ -120,11 +122,11 @@ export default function Home() {
 
   const handleDownload = (format: 'srt' | 'vtt') => {
     if (entries.length === 0) return;
-    
-    const content = format === 'srt' 
-      ? convertToSRT(entries, primaryFontSize, secondaryFontSize) 
-      : convertToVTT(entries, primaryFontSize, secondaryFontSize);
-      
+
+    const content = format === 'srt'
+      ? convertToSRT(entries, primaryFontSize, secondaryFontSize, primaryColor, secondaryColor)
+      : convertToVTT(entries, primaryFontSize, secondaryFontSize, primaryColor, secondaryColor);
+
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -143,7 +145,7 @@ export default function Home() {
     };
     setEntries(newEntries);
     // Regenerate outputContent ngay sau khi thay đổi style từng entry
-    const newContent = convertToSRT(newEntries, primaryFontSize, secondaryFontSize);
+    const newContent = convertToSRT(newEntries, primaryFontSize, secondaryFontSize, primaryColor, secondaryColor);
     setOutputContent(newContent);
   };
 
@@ -159,9 +161,9 @@ export default function Home() {
             Create professional bilingual subtitles by merging two files with precision timing and elegant styling.
           </p>
         </div>
-        
+
         <div className="flex gap-3">
-          <Button 
+          <Button
             onClick={handleMerge}
             disabled={!file1 || !file2 || isLoading}
             className="bg-[#1a3a52] hover:bg-[#1a3a52]/90 text-white gap-2 px-6"
@@ -181,15 +183,15 @@ export default function Home() {
               <FileStack className="h-5 w-5 text-[#d4a574]" />
               <h2 className="text-xl font-['Playfair_Display'] font-bold text-[#1a3a52]">Upload Files</h2>
             </div>
-            
+
             <div className="space-y-6">
-              <SubtitleUploader 
-                language="Primary Language (Top)" 
+              <SubtitleUploader
+                language="Primary Language (Top)"
                 selectedFile={file1 ? new File([file1.content], file1.name) : null}
                 onFileSelect={(f) => handleFileSelect(f, 1)}
               />
-              <SubtitleUploader 
-                language="Secondary Language (Bottom)" 
+              <SubtitleUploader
+                language="Secondary Language (Bottom)"
                 selectedFile={file2 ? new File([file2.content], file2.name) : null}
                 onFileSelect={(f) => handleFileSelect(f, 2)}
               />
@@ -201,7 +203,7 @@ export default function Home() {
               <Timer className="h-5 w-5 text-[#d4a574]" />
               <h2 className="text-xl font-['Playfair_Display'] font-bold text-[#1a3a52]">Synchronization</h2>
             </div>
-            
+
             <div className="space-y-8">
               {/* Secondary Offset */}
               <div className="grid gap-3">
@@ -214,7 +216,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Input 
+                  <Input
                     id="offset"
                     type="number"
                     value={offsetMs}
@@ -222,8 +224,8 @@ export default function Home() {
                     placeholder="0"
                     className="border-[#e0dcd8] font-mono"
                   />
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => setOffsetMs(0)}
                     title="Reset"
@@ -233,10 +235,10 @@ export default function Home() {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {[-500, -100, 100, 500].map(val => (
-                    <Button 
-                      key={val} 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      key={val}
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setOffsetMs(prev => prev + val)}
                       className="text-[10px] h-7 px-2 border border-border/50 hover:bg-accent/5 hover:text-accent"
                     >
@@ -261,7 +263,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Input 
+                  <Input
                     id="globalOffset"
                     type="number"
                     value={globalOffsetMs}
@@ -269,8 +271,8 @@ export default function Home() {
                     placeholder="0"
                     className="border-[#e0dcd8] font-mono"
                   />
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => setGlobalOffsetMs(0)}
                     title="Reset"
@@ -280,10 +282,10 @@ export default function Home() {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {[-500, -100, 100, 500].map(val => (
-                    <Button 
-                      key={val} 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      key={val}
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setGlobalOffsetMs(prev => prev + val)}
                       className="text-[10px] h-7 px-2 border border-border/50 hover:bg-muted"
                     >
@@ -304,15 +306,19 @@ export default function Home() {
               <Settings2 className="h-5 w-5 text-[#d4a574]" />
               <h2 className="text-xl font-['Playfair_Display'] font-bold text-[#1a3a52]">Visual Settings</h2>
             </div>
-            
-            <LanguageFontSizeControls 
+
+            <LanguageFontSizeControls
               primaryFontSize={primaryFontSize}
               secondaryFontSize={secondaryFontSize}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
               onPrimaryFontSizeChange={setPrimaryFontSize}
               onSecondaryFontSizeChange={setSecondaryFontSize}
+              onPrimaryColorChange={setPrimaryColor}
+              onSecondaryColorChange={setSecondaryColor}
             />
-            
-            <SubtitleSpacingControls 
+
+            <SubtitleSpacingControls
               lineHeight={lineHeight}
               marginBottom={marginBottom}
               onLineHeightChange={setLineHeight}
@@ -324,12 +330,14 @@ export default function Home() {
         {/* Right Column: Preview */}
         <div className="lg:col-span-8">
           <Card className="p-8 border-[#e0dcd8] bg-white shadow-sm min-h-[600px]">
-            <SubtitlePreview 
-              entries={entries} 
+            <SubtitlePreview
+              entries={entries}
               onDownload={handleDownload}
               isLoading={isLoading}
               primaryFontSize={primaryFontSize}
               secondaryFontSize={secondaryFontSize}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
               style={{
                 fontSize: primaryFontSize,
                 lineHeight: lineHeight,
@@ -347,7 +355,7 @@ export default function Home() {
 
       {/* Individual Styler Modal */}
       {showStyler && (
-        <SubtitleEntryStyler 
+        <SubtitleEntryStyler
           entries={entries}
           onEntryStyleChange={handleEntryStyleChange}
           onClose={() => setShowStyler(false)}
