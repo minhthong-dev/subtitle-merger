@@ -154,9 +154,12 @@ export default function Home() {
       {/* Header */}
       <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-[#1a3a52] mb-3">
-            Subtitle Merger
-          </h1>
+          <div className="flex items-center gap-4 mb-3">
+            <img src="/logo.png" alt="Logo" className="h-12 w-12 object-contain" />
+            <h1 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-[#1a3a52]">
+              Subtitle Merger
+            </h1>
+          </div>
           <p className="text-[#2d3e50]/70 max-w-xl">
             Create professional bilingual subtitles by merging two files with precision timing and elegant styling.
           </p>
